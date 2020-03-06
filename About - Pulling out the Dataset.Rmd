@@ -1,0 +1,48 @@
+---
+title: "About - Pulling out the Dataset"
+author: "Brian Kim"
+date: "05/03/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(readxl)
+library(dplyr)
+library(ggplot2)
+
+
+```
+
+## Link to Repo
+
+<https://github.com/jybkim/final-project-2>
+
+## About the Project
+
+### About the Dataset
+
+[Data Source](https://sites.google.com/site/knemoto1978/NA%20Elections%201988-2016.xlsx?attredirects=0): <https://sites.google.com/site/knemoto1978/kuniakinemotodata>
+
+*Data on 1988-2016 Parliamentary Elections in South Korea*
+*from Kuniaki Nemoto, Assistant Professor of Political Science at* 
+*Musashi University* 
+
+
+### Goals for the Project
+
+In the about document, link to the repo as follows: 
+<https://github.com/jybkim/final-project-1>
+
+
+## Code for the Project 
+```{r}
+
+
+
+
+```
+
+
+

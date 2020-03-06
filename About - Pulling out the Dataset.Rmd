@@ -76,6 +76,8 @@ PR <- read_excel("NA Elections 1988-2016.xlsx", sheet = "PR",
 
 #### PR Dataset
 
+##### 1) Condense the PR Dataset and add the party vote share nationwide.
+
 ```{r, echo = TRUE}
 
 
@@ -119,8 +121,6 @@ PR$prvotes <- as.numeric(PR$prvotes)
 PR$partyname <- as.character(PR$partyname)
 
 
-
-
 # make prvoteshare column
 
 PR$prvoteshare = ((PR$pvotes/PR$prvotes) * 100)
@@ -139,6 +139,13 @@ names(PR_condensed) <- substring(names(PR_condensed), 4)
 PR_condensed <- PR_condensed %>%
   distinct() %>%
   drop_na(pvotes)
+
+```
+
+
+##### 2) Adjust for the PR voteshare to get the total pct to reflect the total of the four parties together, not 100%. 
+
+```{r, echo = TRUE}
 
 
 # vote share doesn't add to 100 pct because other minor parties,
@@ -169,6 +176,13 @@ PR_condensed$yearvoteshare <- ifelse(PR_condensed$year == 1988,
 PR_condensed$partyadjvoteshare = ((PR_condensed$prvoteshare)/
                                     (PR_condensed$yearvoteshare)) * 100
 
+
+```
+
+
+##### 3) Separate parties based on Conservative vs. Liberal/Progressive natures and make a "two party" dataset (really two ideologies). 
+
+```{r, echo = TRUE}
 # code them as conservative or not
 
 PR_condensed$cons_or_not <- ifelse(
@@ -205,78 +219,83 @@ PR_twopartyvoteshare <- PR_twoparty %>%
   group_by(year, cons_or_not) %>%
   summarise(pct_total = sum(partyadjvoteshare))
 
+# make sure that the pct_total column in twopartyvoteshare is numeric
+PR_twopartyvoteshare$pct_total <- as.numeric(PR_twopartyvoteshare$pct_total)
+
 ```
+
+##### 4) Separate parties based on Conservative vs. Liberal/Progressive natures and make a "two party" dataset (really two ideologies). 
 
 ```{r, echo = TRUE}
 # add pct_total column to the twoparty dataset
 
-# PR_twoparty$ideavoteshare <- ifelse(PR_twoparty$year == 1988 & 
-#                                       PR_twoparty$cons_or_not == 1, 
-#                                      PR_twopartyvoteshare$pct_total[[2]], 
-#                                     NA) %>%
-#   ifelse(PR_twoparty$year == 1988 & PR_twoparty$cons_or_not == 0, 
-#          PR_twopartyvoteshare$pct_total[[1]], .) %>%
-#   ifelse(PR_twoparty$year == 1992 & PR_twoparty$cons_or_not == 1, 
-#          PR_twopartyvoteshare$pct_total[[4]], .) %>%
-#   ifelse(PR_twoparty$year == 1992 & PR_twoparty$cons_or_not == 0, 
-#          PR_twopartyvoteshare$pct_total[[3]], .) %>%
-#   ifelse(PR_twoparty$year == 1996 & PR_twoparty$cons_or_not == 1,
-#          PR_twopartyvoteshare$pct_total[[6]], .) %>%
-#   ifelse(PR_twoparty$year == 1996 & PR_twoparty$cons_or_not == 0, 
-#          PR_twopartyvoteshare$pct_total[[5]], .) %>%
-#   ifelse(PR_twoparty$year == 2000 & PR_twoparty$cons_or_not == 1, 
-#          PR_twopartyvoteshare$pct_total[[8]], .) %>%
-#   ifelse(PR_twoparty$year == 2000 & PR_twoparty$cons_or_not == 0, 
-#          PR_twopartyvoteshare$pct_total[[7]], .) %>%
-#   ifelse(PR_twoparty$year == 2004 & PR_twoparty$cons_or_not == 1, 
-#          PR_twopartyvoteshare$pct_total[[10]], .) %>%
-#   ifelse(PR_twoparty$year == 2004 & PR_twoparty$cons_or_not == 0, 
-#          PR_twopartyvoteshare$pct_total[[9]], .) %>%
-#   ifelse(PR_twoparty$year == 2008 & PR_twoparty$cons_or_not == 1, 
-#          PR_twopartyvoteshare$pct_total[[12]], .) %>%
-#   ifelse(PR_twoparty$year == 2008 & PR_twoparty$cons_or_not == 0, 
-#          PR_twopartyvoteshare$pct_total[[11]], .) %>%
-#   ifelse(PR_twoparty$year == 2012 & PR_twoparty$cons_or_not == 1, 
-#          PR_twopartyvoteshare$pct_total[[14]], .) %>%
-#   ifelse(PR_twoparty$year == 2012 & PR_twoparty$cons_or_not == 0, 
-#          PR_twopartyvoteshare$pct_total[[13]], .) %>%
-#   ifelse(PR_twoparty$year == 2016 & PR_twoparty$cons_or_not == 1, 
-#          PR_twopartyvoteshare$pct_total[[16]], .) %>%
-#   ifelse(PR_twoparty$year == 2016 & PR_twoparty$cons_or_not == 0, 
-#          PR_twopartyvoteshare$pct_total[[15]], .)
+PR_twoparty$ideavoteshare <- ifelse(PR_twoparty$year == 1988 &
+                                      PR_twoparty$cons_or_not == 1,
+                                     PR_twopartyvoteshare$pct_total[[2]],
+                                    NA) %>%
+  ifelse(PR_twoparty$year == 1988 & PR_twoparty$cons_or_not == 0,
+         PR_twopartyvoteshare$pct_total[[1]], .) %>%
+  ifelse(PR_twoparty$year == 1992 & PR_twoparty$cons_or_not == 1,
+         PR_twopartyvoteshare$pct_total[[4]], .) %>%
+  ifelse(PR_twoparty$year == 1992 & PR_twoparty$cons_or_not == 0,
+         PR_twopartyvoteshare$pct_total[[3]], .) %>%
+  ifelse(PR_twoparty$year == 1996 & PR_twoparty$cons_or_not == 1,
+         PR_twopartyvoteshare$pct_total[[6]], .) %>%
+  ifelse(PR_twoparty$year == 1996 & PR_twoparty$cons_or_not == 0,
+         PR_twopartyvoteshare$pct_total[[5]], .) %>%
+  ifelse(PR_twoparty$year == 2000 & PR_twoparty$cons_or_not == 1,
+         PR_twopartyvoteshare$pct_total[[8]], .) %>%
+  ifelse(PR_twoparty$year == 2000 & PR_twoparty$cons_or_not == 0,
+         PR_twopartyvoteshare$pct_total[[7]], .) 
+  # ifelse(PR_twoparty$year == 2004 & PR_twoparty$cons_or_not == 1,
+  #        PR_twopartyvoteshare$pct_total[[10]], .) %>%
+  # ifelse(PR_twoparty$year == 2004 & PR_twoparty$cons_or_not == 0,
+  #        PR_twopartyvoteshare$pct_total[[9]], .) %>%
+  # ifelse(PR_twoparty$year == 2008 & PR_twoparty$cons_or_not == 1,
+  #        PR_twopartyvoteshare$pct_total[[12]], .) %>%
+  # ifelse(PR_twoparty$year == 2008 & PR_twoparty$cons_or_not == 0,
+  #        PR_twopartyvoteshare$pct_total[[11]], .) %>%
+  # ifelse(PR_twoparty$year == 2012 & PR_twoparty$cons_or_not == 1,
+  #        PR_twopartyvoteshare$pct_total[[14]], .) %>%
+  # ifelse(PR_twoparty$year == 2012 & PR_twoparty$cons_or_not == 0,
+  #        PR_twopartyvoteshare$pct_total[[13]], .) %>%
+  # ifelse(PR_twoparty$year == 2016 & PR_twoparty$cons_or_not == 1,
+  #        PR_twopartyvoteshare$pct_total[[16]], .) %>%
+  # ifelse(PR_twoparty$year == 2016 & PR_twoparty$cons_or_not == 0,
+  #        PR_twopartyvoteshare$pct_total[[15]], .)
 ```
 
 ```{r, echo = TRUE}
-# change cons_or_not to character 
-PR_twopartyvoteshare$cons_or_not <- 
-  as.character(PR_twopartyvoteshare$cons_or_not)
-
-
-# ggplot by ideology 
-
-ideology_PR <- ggplot(PR_twopartyvoteshare, aes(x = year, y = pct_total, 
-                                                color = cons_or_not)) + 
-  geom_line() + 
-  scale_colour_manual(values = c("blue", "red")) + 
-  
-  # scale the years
-  scale_x_continuous(breaks = seq(1988, 2016, by = 4),
-                       labels = c("1988", "'92", "'96", "2000",
-                                "'04", "'08", "'12", "'16")) +
-
-  # scale the percentage
-  scale_y_continuous(breaks = seq(10, 100, by = 10),
-                       limits = c(0, 100)) + 
-  
-  # add title to graph
-  labs(title = "Conservative vs. Liberal Vote Share for PR Seats Nationwide",
-         subtitle = "Current system started in 1996",
-         caption  = "Data from Kuniaki Nemoto, Musashi University") + 
-  
-  theme_classic()
-
-
-
-ideology_PR
+# # change cons_or_not to character 
+# PR_twopartyvoteshare$cons_or_not <- 
+#   as.character(PR_twopartyvoteshare$cons_or_not)
+# 
+# 
+# # ggplot by ideology 
+# 
+# ideology_PR <- ggplot(PR_twopartyvoteshare, aes(x = year, y = pct_total, 
+#                                                 color = cons_or_not)) + 
+#   geom_line() + 
+#   scale_colour_manual(values = c("blue", "red")) + 
+#   
+#   # scale the years
+#   scale_x_continuous(breaks = seq(1988, 2016, by = 4),
+#                        labels = c("1988", "'92", "'96", "2000",
+#                                 "'04", "'08", "'12", "'16")) +
+# 
+#   # scale the percentage
+#   scale_y_continuous(breaks = seq(10, 100, by = 10),
+#                        limits = c(0, 100)) + 
+#   
+#   # add title to graph
+#   labs(title = "Conservative vs. Liberal Vote Share for PR Seats Nationwide",
+#          subtitle = "Current system started in 1996",
+#          caption  = "Data from Kuniaki Nemoto, Musashi University") + 
+#   
+#   theme_classic()
+# 
+# 
+# 
+# ideology_PR
 ```
 

@@ -1,12 +1,3 @@
----
-title: "About - Pulling out the Dataset"
-author: "Brian Kim"
-date: "05/03/2020"
-output:
-  html_document: default
-  pdf_document: default
----
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 
@@ -20,51 +11,14 @@ library(rvest)
 library(forcats)
 library(stringr)
 library(magrittr)
-library(reprex)
+library(plotly)
 
 
 ```
 
-## Link to Repo
 
-<https://github.com/jybkim/final-project-2>
+```{r, include = FALSE}
 
-## About the Project
-
-### About the Dataset
-
-[Data Source](https://sites.google.com/site/knemoto1978/NA%20Elections%201988-2016.xlsx?attredirects=0): <https://sites.google.com/site/knemoto1978/kuniakinemotodata>
-
-*Data on 1988-2016 Parliamentary Elections in South Korea*
-*from Kuniaki Nemoto, Assistant Professor of Political Science at* 
-*Musashi University* 
-
-
-### Goals for the Project
-
-In the about document, link to the repo as follows: 
-<https://github.com/jybkim/final-project-1>
-
-
-## Code for the Project 
-
-### Reading in the Datasets
-
-```{r, echo = TRUE}
-
-# read in the excel file, single member district Excel sheet
-
-SMD <- read_excel("NA Elections 1988-2016.xlsx", sheet = "SMD", 
-                  col_types = "list") %>%
-  clean_names()
-
-# New names for gender issued, this may be because gender values are
-# all in Korean
-
-
-```
-
-```{r, echo = TRUE}
 
 # read in the excel file, proportional Excel sheet
 
@@ -75,13 +29,9 @@ PR <- read_excel("NA Elections 1988-2016.xlsx", sheet = "PR",
 
 ```
 
-### Clean the Datasets to Prepare for Join
 
-#### PR Dataset
+```{r, include = FALSE}
 
-##### 1) Condense the PR Dataset and add the party vote share nationwide.
-
-```{r, echo = TRUE}
 
 
 # purpose of cleaning up PR: 
@@ -107,10 +57,7 @@ PR$year <- ifelse(PR$dae == 13, 1988, PR$dae) %>%
   ifelse(PR$dae == 19, 2012, .) %>%
   ifelse(PR$dae == 20, 2016, .)
 
-# check if it worked! 
-test_tibble <- tibble(PR$dae, PR$year)
 
-# looks pretty same! 
 
 # create PR vote share per party
 # note: modern PR vote that reflects nationwide pct starts with 1996 election
@@ -146,9 +93,8 @@ PR_condensed <- PR_condensed %>%
 ```
 
 
-##### 2) Adjust for the PR voteshare to get the total pct to reflect the total of the four parties together, not 100%. 
+```{r, include = FALSE}
 
-```{r, echo = TRUE}
 
 
 # vote share doesn't add to 100 pct because other minor parties,
@@ -183,9 +129,8 @@ PR_condensed$partyadjvoteshare = ((PR_condensed$prvoteshare)/
 ```
 
 
-##### 3) Separate parties based on Conservative vs. Liberal/Progressive natures and make a "two party" dataset (really two ideologies). 
+```{r, include = FALSE}
 
-```{r, echo = TRUE}
 # code them as conservative or not
 
 PR_condensed$cons_or_not <- ifelse(
@@ -227,9 +172,8 @@ PR_twopartyvoteshare$pct_total <- as.numeric(PR_twopartyvoteshare$pct_total)
 
 ```
 
-##### 4) Separate parties based on Conservative vs. Liberal/Progressive natures and make a "two party" dataset (really two ideologies). 
+```{r, include = FALSE}
 
-```{r, echo = TRUE}
 # add pct_total column to the twoparty dataset
 
 PR_twoparty$ideavoteshare <- ifelse(PR_twoparty$year == 1988 &
@@ -237,83 +181,40 @@ PR_twoparty$ideavoteshare <- ifelse(PR_twoparty$year == 1988 &
                                      PR_twopartyvoteshare$pct_total[[2]],
                                     NA) %>%
   ifelse(PR_twoparty$year == 1988 & PR_twoparty$cons_or_not == 0,
-         PR_twopartyvoteshare$pct_total[1], .) %>%
+         PR_twopartyvoteshare$pct_total[[1]], .) %>%
   ifelse(PR_twoparty$year == 1992 & PR_twoparty$cons_or_not == 1,
-         PR_twopartyvoteshare$pct_total[4], .) %>%
+         PR_twopartyvoteshare$pct_total[[4]], .) %>%
   ifelse(PR_twoparty$year == 1992 & PR_twoparty$cons_or_not == 0,
-         PR_twopartyvoteshare$pct_total[3], .) %>%
+         PR_twopartyvoteshare$pct_total[[3]], .) %>%
   ifelse(PR_twoparty$year == 1996 & PR_twoparty$cons_or_not == 1,
-         PR_twopartyvoteshare$pct_total[6], .) %>%
+         PR_twopartyvoteshare$pct_total[[6]], .) %>%
   ifelse(PR_twoparty$year == 1996 & PR_twoparty$cons_or_not == 0,
-         PR_twopartyvoteshare$pct_total[5], .) %>%
+         PR_twopartyvoteshare$pct_total[[5]], .) %>%
   ifelse(PR_twoparty$year == 2000 & PR_twoparty$cons_or_not == 1,
-         PR_twopartyvoteshare$pct_total[8], .) %>%
+         PR_twopartyvoteshare$pct_total[[8]], .) %>%
   ifelse(PR_twoparty$year == 2000 & PR_twoparty$cons_or_not == 0,
-         PR_twopartyvoteshare$pct_total[7], .) %>%
+         PR_twopartyvoteshare$pct_total[[7]], .) %>%
   ifelse(PR_twoparty$year == 2004 & PR_twoparty$cons_or_not == 1,
-         PR_twopartyvoteshare$pct_total[10], .) %>%
+         PR_twopartyvoteshare$pct_total[[10]], .) %>%
   ifelse(PR_twoparty$year == 2004 & PR_twoparty$cons_or_not == 0, 
          PR_twopartyvoteshare$pct_total[9], .) %>%
   ifelse(PR_twoparty$year == 2008 & PR_twoparty$cons_or_not == 1,
-         PR_twopartyvoteshare$pct_total[12], .) %>%
+         PR_twopartyvoteshare$pct_total[[12]], .) %>%
   ifelse(PR_twoparty$year == 2008 & PR_twoparty$cons_or_not == 0,
          PR_twopartyvoteshare$pct_total[11], .) %>%
   ifelse(PR_twoparty$year == 2012 & PR_twoparty$cons_or_not == 1,
-         PR_twopartyvoteshare$pct_total[14], .) %>%
+         PR_twopartyvoteshare$pct_total[[14]], .) %>%
   ifelse(PR_twoparty$year == 2012 & PR_twoparty$cons_or_not == 0,
          PR_twopartyvoteshare$pct_total[13], .) %>%
   ifelse(PR_twoparty$year == 2016 & PR_twoparty$cons_or_not == 1,
-         PR_twopartyvoteshare$pct_total[16], .) %>%
+         PR_twopartyvoteshare$pct_total[[16]], .) %>%
   ifelse(PR_twoparty$year == 2016 & PR_twoparty$cons_or_not == 0,
          PR_twopartyvoteshare$pct_total[15], .)
 
 ```
 
-```{r, echo = TRUE}
 
-# continue with the ideology vote share column edits
-# couldn't continue because subscript errors
-
-# PR_twoparty$ideavoteshare <- ifelse(
-#   PR_twoparty$year == 2004 & PR_twoparty$cons_or_not == 1, 
-#   PR_twopartyvoteshare$pct_total[[10]], NULL) 
-
-  # ifelse(PR_twoparty$year == 2004 & PR_twoparty$cons_or_not == 1,
-  #        PR_twopartyvoteshare$pct_total[[10]], .) %>%
-  # ifelse(PR_twoparty$year == 2004 & PR_twoparty$cons_or_not == 0,
-  #        PR_twopartyvoteshare$pct_total[[9]], .) %>%
-  # ifelse(PR_twoparty$year == 2008 & PR_twoparty$cons_or_not == 1,
-  #        PR_twopartyvoteshare$pct_total[[12]], .) %>%
-  # ifelse(PR_twoparty$year == 2008 & PR_twoparty$cons_or_not == 0,
-  #        PR_twopartyvoteshare$pct_total[[11]], .) %>%
-  # ifelse(PR_twoparty$year == 2012 & PR_twoparty$cons_or_not == 1,
-  #        PR_twopartyvoteshare$pct_total[[14]], .) %>%
-  # ifelse(PR_twoparty$year == 2012 & PR_twoparty$cons_or_not == 0,
-  #        PR_twopartyvoteshare$pct_total[[13]], .) %>%
-  # ifelse(PR_twoparty$year == 2016 & PR_twoparty$cons_or_not == 1,
-  #        PR_twopartyvoteshare$pct_total[[16]], .) %>%
-  # ifelse(PR_twoparty$year == 2016 & PR_twoparty$cons_or_not == 0,
-  #        PR_twopartyvoteshare$pct_total[[15]], .)
-```
-
-```{r, echo = TRUE}
-
-# Problem with the GGPLOT
-
-# The GGPLOT works well when the whole RMD is run on RStudio, but when it is
-# converted to html, the graph seems to not replicate itself on the html file.
-# This is even after clearing output, deleting rproj, restarting everything to
-# make sure that my datasets that I'm using are not corrupted. Because I know
-# for a fact that the graph was able to be made through RStudio (but doesn't
-# show itself on html), I replicated the function on mixing_dataset.Rmd in this
-# repo and used ggsave(). This entire RMD can be knitted to see that the graph
-# doesn't show as it is intended.
-
-
-# change cons_or_not to character
-
-PR_twopartyvoteshare$cons_or_not <-
-  as.numeric(PR_twopartyvoteshare$cons_or_not)
+```{r, include = FALSE}
 
 
 # ggplot by ideology
@@ -347,14 +248,12 @@ ideology_PR <- PR_twopartyvoteshare %>%
   theme_classic()
 
 
+
 ```
 
-##### 5) Graphics to the ggplot on RPub [here](https://rpubs.com/jybkim/582376)
-
-
-### Graphic for PR Vote Share
 
 ``` {r, echo = FALSE}
 knitr::include_graphics("ideology_PR.png")
 ```
+
 
